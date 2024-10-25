@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Trivia Quiz</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* Basic styling for the quiz */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f4f4f9;
+        }
+        .quiz-container {
+            max-width: 600px;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            text-align: center;
+        }
+        h1 {
+            color: #4a4e69;
+        }
+        .progress {
+            font-size: 0.9em;
+            color: #4a4e69;
+            margin-bottom: 10px;
+        }
+        .choices label {
+            display: block;
+            padding: 5px;
+            cursor: pointer;
+            margin-bottom: 5px;
+        }
+        .navigation-buttons {
+            margin-top: 15px;
+        }
+        button {
+            background-color: #4a4e69;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+        #feedback {
+            color: green;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+        #submit-container {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <h1>Python Trivia Quiz</h1>
+        <div class="progress" id="progress"></div>
+        <div id="question-container"></div>
+        <div class="navigation-buttons">
+            <button onclick="previousQuestion()" id="prev-btn">Back</button>
+            <button onclick="nextQuestion()" id="next-btn">Next</button>
+        </div>
+        <p id="feedback"></p>
+    </div>
+    <div id="submit-container" style="display: none;">
+        <button onclick="confirmSubmission()">Are you sure you want to submit?</button>
+    </div>
+
+    <form id="quiz-form" action="{{ url_for('submit') }}" method="POST">
+        <input type="hidden" name="answer" id="answer-input">
+    </form>
+
+    <script>
+        const questions = {{ questions | tojson }};
+        let currentQuestion = 0;
+        let userAnswers = Array(questions.length).fill(null);
+
+        function renderQuestion() {
+            const question = questions[currentQuestion];
+            const questionContainer = document.getElementById('question-container');
+            const answeredCount = userAnswers.filter(answer => answer !== null).length;
+
+            // Display question numbering and progress
+            document.getElementById('progress').textContent = `Question ${currentQuestion + 1} of ${questions.length} — Answered: ${answeredCount} / ${questions.length}`;
+
+            questionContainer.innerHTML = `
+                <h2>Level: ${question.level}</h2>
+                <p><strong>Q${currentQuestion + 1}:</strong> ${question.question}</p>
+                ${question.code ? `<pre><code>${question.code}</code></pre>` : ''}
+                <div class="choices">
+                    ${question.choices.map((choice, index) => `
+                        <label>
+                            <input type="radio" name="choice" value="${index}" 
+                            onclick="selectAnswer(${index})" ${userAnswers[currentQuestion] === index ? 'checked' : ''}>
+                            ${choice}
+                        </label>
+                    `).join('')}
+                </div>
+            `;
+            updateNavigationButtons();
+        }
+
+        function selectAnswer(choiceIndex) {
+            userAnswers[currentQuestion] = choiceIndex;
+            document.getElementById('feedback').textContent = "Thank you for your choice";
+        }
+
+        function nextQuestion() {
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                renderQuestion();
+                document.getElementById('feedback').textContent = ''; // Clear feedback message on next question
+            } else {
+                document.getElementById('question-container').style.display = 'none';
+                document.getElementById('submit-container').style.display = 'block';
+            }
+        }
+
+        function previousQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                renderQuestion();
+                document.getElementById('feedback').textContent = ''; // Clear feedback message on previous question
+            }
+        }
+
+        function confirmSubmission() {
+            document.getElementById('answer-input').value = JSON.stringify(userAnswers);
+            document.getElementById('quiz-form').submit();
+        }
+
+        function updateNavigationButtons() {
+            document.getElementById('prev-btn').style.display = currentQuestion > 0 ? 'inline' : 'none';
+            document.getElementById('next-btn').textContent = currentQuestion < questions.length - 1 ? 'Next' : 'Finish';
+        }
+
+        renderQuestion();
+    </script>
+</body>
+</html>

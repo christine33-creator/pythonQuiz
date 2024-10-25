@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="results-container">
+        <h1>Quiz Results</h1>
+        <ul>
+            {% for question, user_answer in zip(questions, user_answers) %}
+                <li>
+                    <p><strong>{{ question.question }}</strong> (Level: {{ question.level }})</p>
+                    <p>Your answer: <span class="{{ 'correct' if user_answer == question.answer else 'incorrect' }}">
+                        {{ question.choices[user_answer] if user_answer is not None else "No answer selected" }}
+                    </span></p>
+                    {% if user_answer != question.answer %}
+                        <p>Correct answer: <span class="correct">{{ question.choices[question.answer] }}</span></p>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</body>
+</html>

@@ -1,0 +1,28 @@
+body {
+    font-family: Arial, sans-serif;
+}
+
+.quiz-container, .results-container {
+    max-width: 600px;
+    margin: 20px auto;
+    text-align: center;
+}
+
+.navigation-buttons {
+    margin-top: 20px;
+}
+
+.correct {
+    color: green;
+    font-weight: bold;
+}
+
+.incorrect {
+    color: red;
+    font-weight: bold;
+}
+
+#feedback {
+    font-style: italic;
+    margin-top: 10px;
+}
